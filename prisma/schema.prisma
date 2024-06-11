@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  WAITER
+
+  @@map("position_type")
+}
+
+model User {
+  id       String   @id @default(uuid()) @db.Uuid
+  name     String
+  email    String   @unique
+  password String
+  role     UserRole
+
+  Order Order[]
+
+  @@map("users")
+}
+
+model Category {
+  id   String @id @default(uuid()) @db.Uuid
+  icon String
+  name String
+
+  Product Product[]
+
+  @@map("categories")
+}
+
+model Ingredient {
+  id   String @id @default(uuid()) @db.Uuid
+  icon String
+  name String
+
+  Product Product[]
+
+  @@map("ingredients")
+}
+
+model Product {
+  id           String @id @default(uuid()) @db.Uuid
+  ingredientId String @map("ingredient_id") @db.Uuid
+  categoryId   String @map("category_id") @db.Uuid
+  name         String
+  description  String
+  imagePath    String @map("image_path")
+  price        Float
+
+  ingredient Ingredient       @relation(fields: [ingredientId], references: [id])
+  category   Category         @relation(fields: [categoryId], references: [id])
+  orders     ProductOnOrder[]
+
+  @@map("products")
+}
+
+enum OrderType {
+  WAITING
+  IN_PRODUCTION
+  DONE
+
+  @@map("order_type")
+}
+
+model Order {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  productId   String    @map("product_id") @db.Uuid
+  table       Int
+  status      OrderType @default(WAITING)
+  createdAt   DateTime  @default(now())
+  price       Float
+  description String?
+  read        Boolean
+
+  user     User             @relation(fields: [userId], references: [id])
+  products ProductOnOrder[]
+
+  @@map("orders")
+}
+
+enum SizeType {
+  TINY
+  SMALL
+  MEAN
+  LARGE
+  EXTRA_LARGE
+  METER
+
+  @@map("size_type")
+}
+
+model ProductOnOrder {
+  id        String   @id @default(uuid()) @db.Uuid
+  orderId   String   @map("order_id") @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  size      SizeType @default(MEAN)
+  quantity  Int
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("product_on_order")
+}
