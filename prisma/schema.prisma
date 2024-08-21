@@ -41,23 +41,23 @@ model Ingredient {
   icon String
   name String
 
-  Product Product[]
+  products ProductIngredient[]
 
   @@map("ingredients")
 }
 
 model Product {
-  id           String @id @default(uuid()) @db.Uuid
-  ingredientId String @map("ingredient_id") @db.Uuid
-  categoryId   String @map("category_id") @db.Uuid
-  name         String
-  description  String
-  imagePath    String @map("image_path")
-  price        Float
+  id          String  @id @default(uuid()) @db.Uuid
+  categoryId  String  @map("category_id") @db.Uuid
+  name        String
+  description String
+  imagePath   String  @map("image_path")
+  price       Float
+  deleted     Boolean @default(false)
 
-  ingredient Ingredient       @relation(fields: [ingredientId], references: [id])
-  category   Category         @relation(fields: [categoryId], references: [id])
-  orders     ProductOnOrder[]
+  category    Category            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orders      ProductOnOrder[]
+  ingredients ProductIngredient[]
 
   @@map("products")
 }
@@ -73,15 +73,14 @@ enum OrderType {
 model Order {
   id          String    @id @default(uuid()) @db.Uuid
   userId      String    @map("user_id") @db.Uuid
-  productId   String    @map("product_id") @db.Uuid
   table       Int
   status      OrderType @default(WAITING)
   createdAt   DateTime  @default(now())
-  price       Float
   description String?
-  read        Boolean
+  read        Boolean   @default(false)
+  restarted   Boolean   @default(false)
 
-  user     User             @relation(fields: [userId], references: [id])
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   products ProductOnOrder[]
 
   @@map("orders")
@@ -98,15 +97,26 @@ enum SizeType {
   @@map("size_type")
 }
 
+model ProductIngredient {
+  id           String @id @default(uuid()) @db.Uuid
+  productId    String @map("product_id") @db.Uuid()
+  ingredientId String @map("ingredient_id") @db.Uuid()
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ingredient Ingredient? @relation(fields: [ingredientId], references: [id])
+
+  @@map("product_ingredient")
+}
+
 model ProductOnOrder {
   id        String   @id @default(uuid()) @db.Uuid
   orderId   String   @map("order_id") @db.Uuid
   productId String   @map("product_id") @db.Uuid
-  size      SizeType @default(MEAN)
-  quantity  Int
+  size      SizeType
+  quantity  Int      @default(1)
 
-  order   Order   @relation(fields: [orderId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_on_order")
 }
