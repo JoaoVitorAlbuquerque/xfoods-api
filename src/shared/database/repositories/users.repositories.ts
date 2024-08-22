@@ -18,4 +18,12 @@ export class UsersRepository {
   findMany(findManyDto: Prisma.UserFindManyArgs) {
     return this.prismaService.user.findMany(findManyDto);
   }
+
+  update(updateUserDto: Prisma.UserUpdateArgs) {
+    return this.prismaService.user.update(updateUserDto);
+  }
+
+  delete(deleteUserDto: Prisma.UserDeleteArgs) {
+    return this.prismaService.user.delete(deleteUserDto);
+  }
 }

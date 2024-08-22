@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersRepository } from 'src/shared/database/repositories/users.repositories';
+import { hash } from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -35,11 +36,35 @@ export class UsersService {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(userId: string, updateUserDto: UpdateUserDto) {
+    const { name, email, password, role } = updateUserDto;
+
+    const emailTaken = await this.usersRepo.findUnique({
+      where: { email },
+    });
+
+    if (emailTaken) {
+      throw new ConflictException('This email is already in use.');
+    }
+
+    const hashedPassword = await hash(password, 12);
+
+    return this.usersRepo.update({
+      where: { id: userId },
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role,
+      },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(userId: string) {
+    await this.usersRepo.delete({
+      where: { id: userId },
+    });
+
+    return null;
   }
 }

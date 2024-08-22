@@ -1,4 +1,13 @@
-import { Controller, Get, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Param,
+  Delete,
+  Put,
+  ParseUUIDPipe,
+  HttpCode,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ActiveUserId } from 'src/shared/decorators/ActiveUserId';
@@ -22,13 +31,17 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  @Put(':userId')
+  update(
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.update(userId, updateUserDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @Delete(':userId')
+  @HttpCode(204)
+  remove(@Param('userId', ParseUUIDPipe) userId: string) {
+    return this.usersService.remove(userId);
   }
 }
