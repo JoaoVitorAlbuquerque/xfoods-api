@@ -13,13 +13,14 @@ export class OrdersService {
   ) {}
 
   create(userId: string, createOrderDto: CreateOrderDto) {
-    const { table, description, products } = createOrderDto;
+    const { table, description, products, date } = createOrderDto;
 
     return this.ordersRepo.create({
       data: {
         userId,
         table,
         description,
+        date,
         products: {
           create: products.map((product) => ({
             productId: product.product,
@@ -37,7 +38,7 @@ export class OrdersService {
   findAllDashboard() {
     return this.ordersRepo.findMany({
       where: { restarted: false },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { date: 'asc' },
       include: {
         products: {
           select: {
@@ -63,10 +64,16 @@ export class OrdersService {
     });
   }
 
-  findAllHistory() {
+  findAllHistory(filters: { month: number; year: number }) {
     return this.ordersRepo.findMany({
-      where: { restarted: true },
-      orderBy: { createdAt: 'asc' },
+      where: {
+        restarted: true,
+        date: {
+          gte: new Date(Date.UTC(filters.year, filters.month)),
+          lt: new Date(Date.UTC(filters.year, filters.month + 1)),
+        },
+      },
+      orderBy: { date: 'asc' },
       include: {
         products: {
           select: {
@@ -90,10 +97,6 @@ export class OrdersService {
         },
       },
     });
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
   }
 
   async update(orderId: string, updateOrderDto: UpdateOrderDto) {

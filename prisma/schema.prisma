@@ -75,7 +75,7 @@ model Order {
   userId      String    @map("user_id") @db.Uuid
   table       Int
   status      OrderType @default(WAITING)
-  createdAt   DateTime  @default(now())
+  date        DateTime
   description String?
   read        Boolean   @default(false)
   restarted   Boolean   @default(false)

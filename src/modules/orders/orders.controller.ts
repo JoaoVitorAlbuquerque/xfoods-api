@@ -10,6 +10,8 @@ import {
   Put,
   Patch,
   NotFoundException,
+  Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -35,13 +37,11 @@ export class OrdersController {
   }
 
   @Get('/history')
-  findAllHistory() {
-    return this.ordersService.findAllHistory();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(+id);
+  findAllHistory(
+    @Query('month', ParseIntPipe) month: number,
+    @Query('year', ParseIntPipe) year: number,
+  ) {
+    return this.ordersService.findAllHistory({ month, year });
   }
 
   @Put(':orderId')

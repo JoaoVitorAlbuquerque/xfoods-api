@@ -1,4 +1,5 @@
 import {
+  IsDateString,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -30,9 +31,9 @@ export class CreateOrderDto {
   @IsNotEmpty()
   table: number;
 
-  // @IsString()
-  // @IsNotEmpty()
-  // status: 'WAITING' | 'IN_PRODUCTION' | 'DONE'; //
+  @IsDateString()
+  @IsNotEmpty()
+  date: string;
 
   @IsString()
   @IsOptional()
